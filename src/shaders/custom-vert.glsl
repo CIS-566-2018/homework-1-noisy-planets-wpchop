@@ -30,6 +30,7 @@ in vec4 vs_Col;             // The array of vertex colors passed to the shader.
 out vec4 fs_Nor;            // The array of normals that has been transformed by u_ModelInvTr. This is implicitly passed to the fragment shader.
 out vec4 fs_LightVec;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
+out vec4 fs_Pos;
 
 const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, which is used to compute the shading of
                                         //the geometry in the fragment shader.
@@ -162,7 +163,8 @@ float sampleSimplexNoise(float xin, float yin, float zin) {
         n3 = t3 * t3 * dot(grad3[gi3], vec3(x3, y3, z3));
     }
 
-    return 5.0 * (n0 + n1 + n2 + n3);
+    float noise = max(0.0,5.0 * (n0 + n1 + n2 + n3));
+    return clamp(noise, 0.0, 0.2);
     //return 0.05 * sin(0.05 * u_Time) + 1.0;
 }
 
@@ -171,11 +173,11 @@ float simplexNoise(float x, float y, float z) {
     float persistence = 1.5;
 
     for (int i = 0; i < 4; i++) {
-        float frequency = pow(2.0,float(i)) / 2.0;
-        float amplitude = pow(persistence, float(i)) / 2.0;
+        float frequency = pow(2.0,float(i)) / 4.0;
+        float amplitude = pow(persistence, float(i)) / 1.0;
         total += sampleSimplexNoise(x * frequency, y * frequency, z * frequency) * amplitude;
     }
-    return total;
+    return -clamp(total, 0.0, 0.05);
 }
 
 void main()
@@ -189,9 +191,12 @@ void main()
                                                             // perpendicular to the surface after the surface is transformed by
                                                             // the model matrix.
     fs_Col = vec4(normalize(fs_Nor).xyz,1);
-    vec4 offset = simplexNoise(vs_Pos.x, vs_Pos.y, vs_Pos.z) * fs_Nor;
+    vec4 pos = u_Model * vs_Pos;
+    vec4 offset = simplexNoise(pos.x, pos.y, pos.z) * fs_Nor;
 
+    // No offset, modelspace
     vec4 modelposition = u_Model * vs_Pos + offset; // Temporarily store the transformed vertex positions for use below
+    fs_Pos = pos;
 
     fs_LightVec = lightPos - modelposition;  // Compute the direction in which the light source lies
 
