@@ -1,5 +1,17 @@
 # CIS 566 Project 1: Noisy Planets
 
+### Wenli Zhao
+### wenliz
+- Resources:
+  - [simplex noise](http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf)
+- live demo: coming soon!
+![](planet1.png)
+- Features:
+  - For my planet, I used a 3D simplex noise function. Simplex noise is similar to Perlin, but allows for higher dimensions and lower computational overhead. I composed five samples of the noise at different frequencies to give it a more "terrain-like" effect. I achieved a plateau-like top by clampng the noise, scaling it by the normal and actually carving "in" the planet. 
+  - In order to correctly compute the normals of the terrain, rather than using a very computationally expensive method such as sampling noise function 6 times in the x, y, and z directions to get the terrain height in neigboring points, I used something recommended by Byumjin Kim. He suggested the dFdx and dFdy function in the fragment shader. That's why I have the noise function copied in the fragment sahder as well. These functions compute the position of the neighboring fragments. This led to some visual artifacts such as lack of anti-aliasing and normals that aren't quite correct at intersections where the normal is not smooth. However, the tradeoff for performance was extremely worth it on my machine.
+  - Under a certain height, I considered the terrain "water" and added wave-like movement to the water. I say wave-like because I used some sinusoidal functions and kind of arbitrarily wrote a function that moved the water in a periodic manner.
+  - There are also a lot of toggle-able features. My "plateau" doesn't quite work at the moment, so all planets have plateaus, but you can adjust the color of the land, the sea, the level of the water and the noisy-ness of the planet!! (The original idea was to be able to change from plateau to mountanous.)
+
 ## Objective
 - Continue practicing WebGL and Typescript
 - Experiment with noise functions to procedurally generate the surface of a planet
