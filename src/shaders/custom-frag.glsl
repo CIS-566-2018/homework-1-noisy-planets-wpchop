@@ -12,6 +12,9 @@
 precision highp float;
 
 uniform vec4 u_Color; // The color with which to render this instance of geometry.
+uniform vec4 u_Sea;
+uniform vec4 u_Land;
+uniform mat4 u_viewMatrix;
 
 // These are the interpolated values out of the rasterizer, so you can't know
 // their specific values without knowing the vertices that contributed to them
@@ -160,29 +163,63 @@ float simplexNoise(float x, float y, float z) {
     float total = 0.0;
     float persistence = 1.5;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
         float frequency = pow(2.0,float(i)) / 4.0;
         float amplitude = pow(persistence, float(i)) / 1.0;
         total += sampleSimplexNoise(x * frequency, y * frequency, z * frequency) * amplitude;
     }
-    return - clamp(total, 0.0, 0.05);
+    return - clamp(total, -0.05, 0.1);
 }
 
 
 void main()
 {
+    vec3 fragColor = vec3(0.0);
+
     // Determining the surface normal 
-    vec3 pos = vec3(fs_Pos + simplexNoise(fs_Pos.x, fs_Pos.y, fs_Pos.z) * fs_Nor);
+    float noise = simplexNoise(fs_Pos.x, fs_Pos.y, fs_Pos.z);
+    vec3 pos = vec3(fs_Pos + noise * fs_Nor);
     vec3 surfaceNormal = normalize(- cross( vec3(dFdx(pos)), vec3(dFdy(pos))));
-    // vec3 surfaceNormal = vec3(fs_Nor);
 
     // Material base color (before shading)
-        vec4 diffuseColor = fs_Col;
+    vec4 diffuseColor = fs_Col;
+
+    if (!(noise + 0.1 > 0.0001)) {
+        vec3 albedo = vec3(0.2, 0.2, 0.2);
+         // Ocean
+        vec3 lightDir = vec3(fs_LightVec);
+        float NdotL = clamp(dot(surfaceNormal, lightDir), 0.1, 1.0);
+
+        mat4 invViewMatrix = inverse(u_viewMatrix);
+        vec4 cameraWorldPos = invViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+        vec3 V = normalize(cameraWorldPos.xyz - pos);
+        vec3 H = normalize(lightDir + V);
+        float NdotH = max(dot(H, surfaceNormal), 0.0);
+        float specular = pow(NdotH, 100.0);
+        fragColor += (albedo + vec3(specular)) * NdotL;
 
         // Calculate the diffuse term for Lambert shading
         float diffuseTerm = dot(normalize(vec4(surfaceNormal,0.0)), normalize(fs_LightVec));
         // Avoid negative lighting values
-        // diffuseTerm = clamp(diffuseTerm, 0, 1);
+       // diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);
+
+        float ambientTerm = 0.2;
+
+        float lightIntensity = diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
+                                                            //to simulate ambient lighting. This ensures that faces that are not
+                                                            //lit by our point light are not completely black.
+
+        fragColor += 0.8 * diffuseColor.rgb * lightIntensity;
+        // Compute final shaded color
+        out_Col = vec4(fragColor, diffuseColor.a);
+
+        return;
+    }
+
+        // Calculate the diffuse term for Lambert shading
+        float diffuseTerm = dot(normalize(vec4(surfaceNormal,0.0)), normalize(fs_LightVec));
+        // Avoid negative lighting values
+        diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);
 
         float ambientTerm = 0.2;
 
@@ -192,5 +229,4 @@ void main()
 
         // Compute final shaded color
         out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
-        // out_Col = vec4(surfaceNormal, 1.0);
 }

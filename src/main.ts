@@ -15,6 +15,8 @@ const controls = {
   tesselations: 6,
   'Load Scene': loadScene, // A function pointer, essentially
   color: [255.0, 0.0, 0.0],
+  land: [66.0, 206.0, 126.0],
+  sea: [66.0, 185.0, 206.0],
   shader: 'custom'
 };
 
@@ -40,6 +42,8 @@ function main() {
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
   gui.addColor(controls, 'color');
+  gui.addColor(controls, 'land');
+  gui.addColor(controls, 'sea');
   gui.add(controls, 'shader', ['lambert', 'custom']);
 
   // get canvas and webgl context
@@ -80,11 +84,14 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
     let col: vec4 = vec4.fromValues(controls.color[0]/255,controls.color[1]/255,controls.color[2]/255, 1.0);
+    let landCol: vec4 = vec4.fromValues(controls.land[0]/255,controls.land[1]/255,controls.land[2]/255, 1.0);
+    let seaCol: vec4 = vec4.fromValues(controls.sea[0]/255,controls.sea[1]/255,controls.sea[2]/255, 1.0);
+
     let shader = lambert;
     if (controls.shader == 'custom') {
       shader = custom;
     }
-    renderer.render(camera, shader, col, count, [
+    renderer.render(camera, shader, col, landCol, seaCol, count, [
       icosphere,
     ]);
     stats.end();

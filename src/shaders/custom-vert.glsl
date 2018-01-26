@@ -20,6 +20,8 @@ uniform mat4 u_ViewProj;    // The matrix that defines the camera's transformati
                             // but in HW3 you'll have to generate one yourself
 
 uniform float u_Time;       // Time variable to pass to sinusoid functions.
+uniform vec4 u_Sea;
+uniform vec4 u_Land;
 
 in vec4 vs_Pos;             // The array of vertex positions passed to the shader
 
@@ -172,18 +174,22 @@ float simplexNoise(float x, float y, float z) {
     float total = 0.0;
     float persistence = 1.5;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
         float frequency = pow(2.0,float(i)) / 4.0;
         float amplitude = pow(persistence, float(i)) / 1.0;
         total += sampleSimplexNoise(x * frequency, y * frequency, z * frequency) * amplitude;
     }
-    return -clamp(total, 0.0, 0.05);
+    return -clamp(total, -0.05, 0.10);
+}
+
+float getWave(float x, float y, float z) {
+    return 0.2 * sin(0.1 * z * u_Time) * 0.1 * cos(0.01 * (x + y)* u_Time);
 }
 
 void main()
 {
-    vec4 blue = vec4(0.0,0.0,1.0,1.0);
-    vec4 green = vec4(0.29,0.43,0.25,1.0);
+    vec4 sea = vec4(186.0/255.0, 72.0/255.0, 93.0/255.0,1.0);
+    vec4 terrain = vec4(0.5, 0.5, 0.5, 1.0);
     fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
 
     mat3 invTranspose = mat3(u_ModelInvTr);
@@ -197,10 +203,13 @@ void main()
     fs_Pos = pos;
     float noise = simplexNoise(pos.x, pos.y, pos.z);
     vec4 offset = noise * fs_Nor;
-    if (noise + 0.05 > 0.0001) {
-        fs_Col = green;
+    if (noise + 0.1 > 0.0001) {
+        fs_Col = u_Land;
     } else {
-        fs_Col = blue;
+        float wave = getWave(pos.x, pos.y, pos.z);
+        offset += (wave) * fs_Nor;
+        fs_Col = u_Sea;
+
     }
 
     // No offset, modelspace

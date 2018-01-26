@@ -28,7 +28,10 @@ class ShaderProgram {
   unifModel: WebGLUniformLocation;
   unifModelInvTr: WebGLUniformLocation;
   unifViewProj: WebGLUniformLocation;
+  unifView: WebGLUniformLocation;
   unifColor: WebGLUniformLocation;
+  unifLand: WebGLUniformLocation;
+  unifSea: WebGLUniformLocation;  
   unifTime: WebGLUniformLocation;
 
   constructor(shaders: Array<Shader>) {
@@ -48,7 +51,10 @@ class ShaderProgram {
     this.unifModel      = gl.getUniformLocation(this.prog, "u_Model");
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
+    this.unifView       = gl.getUniformLocation(this.prog, "u_ViewMatrix");
     this.unifColor      = gl.getUniformLocation(this.prog, "u_Color");
+    this.unifLand      = gl.getUniformLocation(this.prog, "u_Land");
+    this.unifSea      = gl.getUniformLocation(this.prog, "u_Sea");
     this.unifTime       = gl.getUniformLocation(this.prog, "u_Time");
   }
 
@@ -80,12 +86,34 @@ class ShaderProgram {
     }
   }
 
+  setViewMatrix(vp: mat4) {
+    this.use();
+    if (this.unifView !== -1) {
+      gl.uniformMatrix4fv(this.unifView, false, vp);
+    }
+  }
+
   setGeometryColor(color: vec4) {
     this.use();
     if (this.unifColor !== -1) {
       gl.uniform4fv(this.unifColor, color);
     }
   }
+
+  setLandColor(color: vec4) {
+    this.use();
+    if (this.unifLand !== -1) {
+      gl.uniform4fv(this.unifLand, color);
+    }
+  }
+
+  setSeaColor(color: vec4) {
+    this.use();
+    if (this.unifSea !== -1) {
+      gl.uniform4fv(this.unifSea, color);
+    }
+  }
+
 
   setTime(count: number) {
     this.use();
