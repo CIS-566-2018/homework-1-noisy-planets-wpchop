@@ -15,8 +15,8 @@ const controls = {
   tesselations: 6,
   'Load Scene': loadScene, // A function pointer, essentially
   color: [255.0, 0.0, 0.0],
-  land: [66.0, 206.0, 126.0],
-  sea: [66.0, 185.0, 206.0],
+  land: [107.0, 109.0, 108.0],
+  sea: [32.0, 199.0, 209.0],
   waterLevel: 0.1,
   noise: 5,
   plateau: true,
