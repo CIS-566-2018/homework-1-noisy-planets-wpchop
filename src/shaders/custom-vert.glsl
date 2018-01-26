@@ -182,7 +182,9 @@ float simplexNoise(float x, float y, float z) {
 
 void main()
 {
-    // fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
+    vec4 blue = vec4(0.0,0.0,1.0,1.0);
+    vec4 green = vec4(0.29,0.43,0.25,1.0);
+    fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
 
     mat3 invTranspose = mat3(u_ModelInvTr);
     fs_Nor = normalize(vec4(invTranspose * vec3(vs_Nor), 0));          // Pass the vertex normals to the fragment shader for interpolation.
@@ -192,11 +194,17 @@ void main()
                                                             // the model matrix.
     fs_Col = vec4(normalize(fs_Nor).xyz,1);
     vec4 pos = u_Model * vs_Pos;
-    vec4 offset = simplexNoise(pos.x, pos.y, pos.z) * fs_Nor;
+    fs_Pos = pos;
+    float noise = simplexNoise(pos.x, pos.y, pos.z);
+    vec4 offset = noise * fs_Nor;
+    if (noise + 0.05 > 0.0001) {
+        fs_Col = green;
+    } else {
+        fs_Col = blue;
+    }
 
     // No offset, modelspace
     vec4 modelposition = u_Model * vs_Pos + offset; // Temporarily store the transformed vertex positions for use below
-    fs_Pos = pos;
 
     fs_LightVec = lightPos - modelposition;  // Compute the direction in which the light source lies
 

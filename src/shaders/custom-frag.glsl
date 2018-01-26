@@ -165,19 +165,19 @@ float simplexNoise(float x, float y, float z) {
         float amplitude = pow(persistence, float(i)) / 1.0;
         total += sampleSimplexNoise(x * frequency, y * frequency, z * frequency) * amplitude;
     }
-    return - clamp(total, 0.0, 0.1);
+    return - clamp(total, 0.0, 0.05);
 }
 
 
 void main()
 {
-
+    // Determining the surface normal 
     vec3 pos = vec3(fs_Pos + simplexNoise(fs_Pos.x, fs_Pos.y, fs_Pos.z) * fs_Nor);
-
     vec3 surfaceNormal = normalize(- cross( vec3(dFdx(pos)), vec3(dFdy(pos))));
+    // vec3 surfaceNormal = vec3(fs_Nor);
 
     // Material base color (before shading)
-        vec4 diffuseColor = u_Color;
+        vec4 diffuseColor = fs_Col;
 
         // Calculate the diffuse term for Lambert shading
         float diffuseTerm = dot(normalize(vec4(surfaceNormal,0.0)), normalize(fs_LightVec));
