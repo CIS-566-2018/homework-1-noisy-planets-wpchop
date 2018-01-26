@@ -33,6 +33,9 @@ class ShaderProgram {
   unifLand: WebGLUniformLocation;
   unifSea: WebGLUniformLocation;  
   unifTime: WebGLUniformLocation;
+  unifNoise: WebGLUniformLocation;
+  unifWaterLevel: WebGLUniformLocation;
+  unifPlat: WebGLUniformLocation;
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -53,15 +56,39 @@ class ShaderProgram {
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
     this.unifView       = gl.getUniformLocation(this.prog, "u_ViewMatrix");
     this.unifColor      = gl.getUniformLocation(this.prog, "u_Color");
-    this.unifLand      = gl.getUniformLocation(this.prog, "u_Land");
-    this.unifSea      = gl.getUniformLocation(this.prog, "u_Sea");
+    this.unifLand       = gl.getUniformLocation(this.prog, "u_Land");
+    this.unifSea        = gl.getUniformLocation(this.prog, "u_Sea");
     this.unifTime       = gl.getUniformLocation(this.prog, "u_Time");
+    this.unifNoise      = gl.getUniformLocation(this.prog, "u_Noise");
+    this.unifWaterLevel = gl.getUniformLocation(this.prog, "u_WaterLevel");
+    this.unifPlat       = gl.getUniformLocation(this.prog, "u_Plat");
   }
 
   use() {
     if (activeProgram !== this.prog) {
       gl.useProgram(this.prog);
       activeProgram = this.prog;
+    }
+  }
+
+  setWaterLevel(wat: number) {
+    this.use();
+    if (this.unifWaterLevel !== -1) {
+      gl.uniform1f(this.unifWaterLevel, wat);
+    }
+  }
+
+  setNoise(n: number) {
+    this.use();
+    if (this.unifNoise !== -1) {
+      gl.uniform1i(this.unifNoise, n);
+    }
+  }
+
+  setPlat(plat: number) {
+    this.use();
+    if (this.unifPlat !== -1) {
+      gl.uniform1i(this.unifPlat, plat);
     }
   }
 

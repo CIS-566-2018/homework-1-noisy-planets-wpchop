@@ -22,7 +22,8 @@ class OpenGLRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
-  render(camera: Camera, prog: ShaderProgram, color: vec4, land: vec4, sea: vec4, 
+  render(camera: Camera, prog: ShaderProgram, color: vec4, land: vec4, sea: vec4, noise: number,
+    plat: number, waterLevel: number,
     count: number, drawables: Array<Drawable>) {
     let model = mat4.create();
     let viewProj = mat4.create();
@@ -36,7 +37,10 @@ class OpenGLRenderer {
     prog.setTime(count);
     prog.setLandColor(land);
     prog.setSeaColor(sea);
-
+    prog.setNoise(noise);
+    prog.setPlat(plat);
+    prog.setWaterLevel(waterLevel);
+    
     for (let drawable of drawables) {
       prog.draw(drawable);
     }

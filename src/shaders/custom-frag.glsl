@@ -22,6 +22,8 @@ in vec4 fs_Nor;
 in vec4 fs_LightVec;
 in vec4 fs_Col;
 in vec4 fs_Pos;
+in float fs_Noise;
+in float fs_WaterLevel;
 
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
@@ -163,12 +165,12 @@ float simplexNoise(float x, float y, float z) {
     float total = 0.0;
     float persistence = 1.5;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < int(fs_Noise); i++) {
         float frequency = pow(2.0,float(i)) / 4.0;
         float amplitude = pow(persistence, float(i)) / 1.0;
         total += sampleSimplexNoise(x * frequency, y * frequency, z * frequency) * amplitude;
     }
-    return - clamp(total, -0.05, 0.1);
+    return - clamp(total, -0.05, fs_WaterLevel);
 }
 
 
@@ -184,7 +186,7 @@ void main()
     // Material base color (before shading)
     vec4 diffuseColor = fs_Col;
 
-    if (!(noise + 0.1 > 0.0001)) {
+    if (!(noise + fs_WaterLevel > 0.0001)) {
         vec3 albedo = vec3(0.2, 0.2, 0.2);
          // Ocean
         vec3 lightDir = vec3(fs_LightVec);

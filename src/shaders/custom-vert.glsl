@@ -22,6 +22,9 @@ uniform mat4 u_ViewProj;    // The matrix that defines the camera's transformati
 uniform float u_Time;       // Time variable to pass to sinusoid functions.
 uniform vec4 u_Sea;
 uniform vec4 u_Land;
+uniform int u_Noise;
+uniform float u_WaterLevel;
+uniform int u_Plat;
 
 in vec4 vs_Pos;             // The array of vertex positions passed to the shader
 
@@ -33,6 +36,8 @@ out vec4 fs_Nor;            // The array of normals that has been transformed by
 out vec4 fs_LightVec;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Pos;
+out float fs_Noise;
+out float fs_WaterLevel;
 
 const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, which is used to compute the shading of
                                         //the geometry in the fragment shader.
@@ -174,12 +179,12 @@ float simplexNoise(float x, float y, float z) {
     float total = 0.0;
     float persistence = 1.5;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < u_Noise; i++) {
         float frequency = pow(2.0,float(i)) / 4.0;
         float amplitude = pow(persistence, float(i)) / 1.0;
         total += sampleSimplexNoise(x * frequency, y * frequency, z * frequency) * amplitude;
     }
-    return -clamp(total, -0.05, 0.10);
+    return -clamp(total, -0.05, u_WaterLevel);
 }
 
 float getWave(float x, float y, float z) {
@@ -188,6 +193,8 @@ float getWave(float x, float y, float z) {
 
 void main()
 {
+    fs_WaterLevel = u_WaterLevel;
+    fs_Noise = float(u_Noise);
     vec4 sea = vec4(186.0/255.0, 72.0/255.0, 93.0/255.0,1.0);
     vec4 terrain = vec4(0.5, 0.5, 0.5, 1.0);
     fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
@@ -203,7 +210,7 @@ void main()
     fs_Pos = pos;
     float noise = simplexNoise(pos.x, pos.y, pos.z);
     vec4 offset = noise * fs_Nor;
-    if (noise + 0.1 > 0.0001) {
+    if (noise + u_WaterLevel > 0.0001) {
         fs_Col = u_Land;
     } else {
         float wave = getWave(pos.x, pos.y, pos.z);

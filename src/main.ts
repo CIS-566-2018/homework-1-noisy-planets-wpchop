@@ -17,6 +17,9 @@ const controls = {
   color: [255.0, 0.0, 0.0],
   land: [66.0, 206.0, 126.0],
   sea: [66.0, 185.0, 206.0],
+  waterLevel: 0.1,
+  noise: 5,
+  plateau: true,
   shader: 'custom'
 };
 
@@ -44,6 +47,9 @@ function main() {
   gui.addColor(controls, 'color');
   gui.addColor(controls, 'land');
   gui.addColor(controls, 'sea');
+  gui.add(controls, 'noise', 0,5).step(1);
+  gui.add(controls, 'waterLevel', 0, 0.3);
+  gui.add(controls, 'plateau');
   gui.add(controls, 'shader', ['lambert', 'custom']);
 
   // get canvas and webgl context
@@ -86,12 +92,15 @@ function main() {
     let col: vec4 = vec4.fromValues(controls.color[0]/255,controls.color[1]/255,controls.color[2]/255, 1.0);
     let landCol: vec4 = vec4.fromValues(controls.land[0]/255,controls.land[1]/255,controls.land[2]/255, 1.0);
     let seaCol: vec4 = vec4.fromValues(controls.sea[0]/255,controls.sea[1]/255,controls.sea[2]/255, 1.0);
-
+    let noise: number = controls.noise;
+    let plat: number = 0;
+    if (controls.plateau) {plat = 1;}
+    let waterLevel: number = controls.waterLevel;
     let shader = lambert;
     if (controls.shader == 'custom') {
       shader = custom;
     }
-    renderer.render(camera, shader, col, landCol, seaCol, count, [
+    renderer.render(camera, shader, col, landCol, seaCol, noise, plat, waterLevel, count, [
       icosphere,
     ]);
     stats.end();
